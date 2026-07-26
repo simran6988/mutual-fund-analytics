@@ -1,46 +1,78 @@
+"""
+Project : Mutual Fund Analytics
+Author  : Simran
+Purpose : Clean all raw datasets and generate a cleaning summary.
+"""
+
 from pathlib import Path
 import pandas as pd
 
-# Mutual Fund Analytics
-# Data Cleaning Pipeline
-
 RAW_PATH = Path("data/raw")
 PROCESSED_PATH = Path("data/processed")
+REPORT_PATH = Path("reports/logs")
 
-# Create processed folder if it doesn't exist
 PROCESSED_PATH.mkdir(exist_ok=True)
+REPORT_PATH.mkdir(parents=True, exist_ok=True)
+
+summary = []
 
 print("=" * 80)
 print("MUTUAL FUND ANALYTICS")
-print("Data Cleaning Pipeline")
+print("Universal Data Cleaning Pipeline")
 print("=" * 80)
 
-# Load dataset
-df = pd.read_csv(RAW_PATH / "01_fund_master.csv")
+csv_files = sorted(RAW_PATH.glob("*.csv"))
 
-print(f"\nOriginal Shape : {df.shape}")
+for file in csv_files:
 
-# Remove duplicate rows
-duplicates = df.duplicated().sum()
-df = df.drop_duplicates()
+    print(f"\nProcessing : {file.name}")
 
-# Remove leading/trailing spaces from text columns
-text_columns = df.select_dtypes(include="object").columns
-for column in text_columns:
-    df[column] = df[column].str.strip()
+    df = pd.read_csv(file)
 
-# Convert launch_date into datetime
-df["launch_date"] = pd.to_datetime(
-    df["launch_date"],
-    errors="coerce"
+    original_rows = len(df)
+
+    duplicates = df.duplicated().sum()
+
+    df = df.drop_duplicates()
+
+    # Clean text columns
+    text_columns = df.select_dtypes(include="object").columns
+
+    for col in text_columns:
+        df[col] = df[col].astype(str).str.strip()
+
+    invalid_dates = 0
+
+    # Automatically convert date columns
+    for col in df.columns:
+
+        if "date" in col.lower() or "month" in col.lower():
+
+            converted = pd.to_datetime(df[col], errors="coerce")
+
+            invalid_dates += converted.isna().sum()
+
+            df[col] = converted
+
+    output_file = PROCESSED_PATH / f"{file.stem}_clean.csv"
+
+    df.to_csv(output_file, index=False)
+
+    summary.append({
+        "Dataset": file.name,
+        "Original Rows": original_rows,
+        "Final Rows": len(df),
+        "Duplicates Removed": duplicates,
+        "Invalid Dates": invalid_dates
+    })
+
+summary_df = pd.DataFrame(summary)
+
+summary_df.to_csv(
+    REPORT_PATH / "cleaning_summary.csv",
+    index=False
 )
-print(f"Invalid Dates    : {df['launch_date'].isna().sum()}")
-print(f"Duplicates Removed : {duplicates}")
-print(f"Final Shape        : {df.shape}")
 
-# Save cleaned dataset
-output_file = PROCESSED_PATH / "01_fund_master_clean.csv"
-df.to_csv(output_file, index=False)
+print("\nCleaning completed successfully.")
 
-print("\nCleaned dataset saved successfully.")
-print(output_file)
+print(summary_df)
