@@ -1,7 +1,6 @@
 """
 Project : Mutual Fund Analytics
-Author  : Simran
-Purpose : Execute SQL queries stored in the sql folder.
+Purpose : Execute SQL queries from a .sql file
 """
 
 from pathlib import Path
@@ -10,28 +9,38 @@ import pandas as pd
 
 
 DATABASE_PATH = Path("database") / "mutual_fund.db"
-SQL_PATH = Path("sql") / "01_top_fund_houses.sql"
+SQL_FILE = Path("sql") / "fund_analysis.sql"
 
 
 def main():
 
     connection = sqlite3.connect(DATABASE_PATH)
 
-    with open(SQL_PATH, "r", encoding="utf-8") as file:
-        query = file.read()
+    with open(SQL_FILE, "r", encoding="utf-8") as file:
+        sql_script = file.read()
 
-    result = pd.read_sql_query(query, connection)
+    queries = [
+        query.strip()
+        for query in sql_script.split(";")
+        if query.strip()
+    ]
+
+    for index, query in enumerate(queries, start=1):
+
+        print("\n" + "=" * 70)
+        print(f"Query {index}")
+        print("=" * 70)
+
+        try:
+            result = pd.read_sql_query(query, connection)
+            print(result)
+
+            print(f"\nRows Returned : {len(result)}")
+
+        except Exception as error:
+            print(f"Error: {error}")
 
     connection.close()
-
-    print("=" * 60)
-    print("MUTUAL FUND ANALYTICS")
-    print("SQL Query Result")
-    print("=" * 60)
-
-    print(result)
-
-    print(f"\nTotal Rows : {len(result)}")
 
 
 if __name__ == "__main__":
