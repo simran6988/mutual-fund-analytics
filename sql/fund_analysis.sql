@@ -38,3 +38,15 @@ SELECT
 FROM "07_scheme_performance"
 ORDER BY return_5yr_pct DESC
 LIMIT 10;
+
+/*---------------------------------------------------------
+Which mutual fund schemes have the highest risk-adjusted returns?
+---------------------------------------------------------*/
+
+SELECT
+    scheme_name,
+    fund_house,
+    sharpe_ratio
+FROM "07_scheme_performance"
+ORDER BY sharpe_ratio DESC
+LIMIT 10;
