@@ -9,7 +9,7 @@ import pandas as pd
 
 
 DATABASE_PATH = Path("database") / "mutual_fund.db"
-SQL_FILE = Path("sql") / "fund_analysis.sql"
+SQL_FILE = Path("sql") / "investor_analysis.sql"
 
 
 def main():
