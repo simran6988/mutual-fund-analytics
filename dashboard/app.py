@@ -117,6 +117,8 @@ st.divider()
 left, right = st.columns([2, 1])
 
 with left:
+    st.subheader("Top Fund Houses by AUM")
+
     st.plotly_chart(
         top_fund_house_chart(),
         use_container_width=True
@@ -125,14 +127,68 @@ with left:
 with right:
     st.subheader("Quick Insights")
 
-    st.success("🏦 Largest Fund House: SBI Mutual Fund")
+    st.success("🏆 Best Performing Scheme (5 Years)")
+
+    st.write(best_fund.loc[0, "scheme_name"])
+
+    st.metric(
+        "5-Year Return",
+        f"{best_fund.loc[0, 'return_5yr_pct']}%"
+    )
+
+st.divider()
+
+st.subheader("Dashboard Modules")
+
+col1, col2 = st.columns(2)
+
+with col1:
 
     st.info(
-        f"🏆 Best 5-Year Return: {best_fund.loc[0,'return_5yr_pct']}%"
+        """
+### 📈 Fund Analysis
+
+- Top performing schemes
+- Fund house comparison
+- Expense ratio analysis
+- Risk vs Return
+"""
     )
 
     st.info(
-        best_fund.loc[0, "scheme_name"]
+        """
+### 👥 Investor Analysis
+
+- State-wise investment
+- Payment mode analysis
+- Investor trends
+"""
     )
 
-    st.warning("👥 Investor Transactions: 32,778")
+with col2:
+
+    st.info(
+        """
+### 💰 SIP Analysis
+
+- Monthly SIP inflow
+- Category-wise inflow
+- Industry trends
+"""
+    )
+
+    st.info(
+        """
+### 🔍 Fund Explorer
+
+- Search any scheme
+- View detailed metrics
+- Compare fund performance
+"""
+    )
+
+st.divider()
+
+st.success(
+    "Use the navigation menu on the left to explore each analytics module."
+)
